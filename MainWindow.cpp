@@ -253,8 +253,12 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 storage.clearSelection();
                 shape->setSelected(true);
             }
-            dragging = true;
-            lastMousePosition = point;
+            dragging = shape->isSelected();
+
+            if (dragging)
+            {
+                lastMousePosition = point;
+            }
 
             break;
         }
