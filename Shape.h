@@ -4,7 +4,8 @@
 #include <QColor>
 #include <QPainter>
 #include <QRect>
-
+#include <QTextStream>
+class ShapeFactory;
 class Shape
 {
 protected:
@@ -29,9 +30,14 @@ public:
     virtual void move(int dx, int dy, const QRect &bounds);
 
     virtual QRect boundingRect() const = 0;
-    void setColor(const QColor &newColor);
-    void resize(int delta, const QRect &bounds);
+    virtual void setColor(const QColor &newColor);
+    virtual bool resize(int delta, const QRect &bounds);
     bool fitsInBounds(const QRect &bounds) const;
+    virtual void save(QTextStream& out, int indent = 0) const = 0;
+    virtual bool load(
+       QTextStream& in,
+       const ShapeFactory& factory
+   ) = 0;
 };
 
 #endif

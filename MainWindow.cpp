@@ -8,6 +8,10 @@
 #include "CEllipse.h"
 #include "CLine.h"
 #include "Group.h"
+#include <QFileDialog>
+#include <QMessageBox>
+
+#include "ShapeFactory.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -55,6 +59,18 @@ void MainWindow::setupActions()
     ellipseAction = new QAction("Эллипс", this);
     lineAction = new QAction("Отрезок", this);
     groupAction = new QAction("Сгруппировать", this);
+    saveAction = new QAction("Сохранить", this);
+    loadAction = new QAction("Загрузить", this);
+
+    connect(saveAction, &QAction::triggered, this, [this]()
+{
+    saveProject();
+});
+
+    connect(loadAction, &QAction::triggered, this, [this]()
+    {
+        loadProject();
+    });
 
     connect(groupAction, &QAction::triggered, this, [this](){
     groupSelected();
@@ -88,6 +104,10 @@ void MainWindow::setupActions()
     {
         currentShapeType = ShapeType::Line;
     });
+    QMenu* fileMenu = menuBar()->addMenu("Файл");
+
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(loadAction);
     QMenu *shapeMenu = menuBar()->addMenu("Фигура");
     shapeMenu->addAction(circleAction);
     shapeMenu->addAction(rectangleAction);
@@ -139,6 +159,8 @@ void MainWindow::setupActions()
     });
 
     ungroupAction->setShortcut(QKeySequence("Ctrl+Shift+G"));
+    saveAction->setShortcut(QKeySequence::Save);
+    loadAction->setShortcut(QKeySequence::Open);
 
     editMenu->addAction(ungroupAction);
 }
@@ -231,6 +253,8 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
                 storage.clearSelection();
                 shape->setSelected(true);
             }
+            dragging = true;
+            lastMousePosition = point;
 
             break;
         }
@@ -289,7 +313,49 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     }
     update();
 }
+void MainWindow::mouseMoveEvent(QMouseEvent* event)
+{
+    if (!dragging ||
+        !(event->buttons() & Qt::LeftButton))
+    {
+        return;
+    }
 
+    QPoint currentPosition = event->position().toPoint();
+
+    int dx = currentPosition.x() - lastMousePosition.x();
+    int dy = currentPosition.y() - lastMousePosition.y();
+
+    if (dx == 0 && dy == 0)
+    {
+        return;
+    }
+
+    QRect bounds = getWorkAreaRect();
+
+    for (int i = 0; i < storage.getCount(); ++i)
+    {
+        Shape* shape = storage.getObject(i);
+
+        if (shape->isSelected())
+        {
+            shape->move(dx, dy, bounds);
+        }
+    }
+
+    lastMousePosition = currentPosition;
+
+    update();
+}
+void MainWindow::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        dragging = false;
+    }
+
+    QMainWindow::mouseReleaseEvent(event);
+}
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     QMainWindow::paintEvent(event);
@@ -427,5 +493,66 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
 
     
+    update();
+}
+void MainWindow::saveProject()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        "Сохранить проект",
+        QString(),
+        "Текстовые файлы (*.txt)"
+    );
+
+    if (fileName.isEmpty())
+    {
+        return;
+    }
+
+    if (!fileName.endsWith(".txt"))
+    {
+        fileName += ".txt";
+    }
+
+    if (!storage.saveToFile(fileName))
+    {
+        QMessageBox::critical(
+            this,
+            "Ошибка",
+            "Не удалось сохранить проект."
+        );
+    }
+}
+void MainWindow::loadProject()
+{
+    QString fileName = QFileDialog::getOpenFileName(
+        this,
+        "Загрузить проект",
+        QString(),
+        "Текстовые файлы (*.txt)"
+    );
+
+    if (fileName.isEmpty())
+    {
+        return;
+    }
+
+    DefaultShapeFactory factory;
+
+    if (!storage.loadFromFile(
+            fileName,
+            factory,
+            getWorkAreaRect()))
+    {
+        QMessageBox::critical(
+            this,
+            "Ошибка",
+            "Не удалось загрузить проект. "
+            "Файл повреждён или содержит некорректные данные."
+        );
+
+        return;
+    }
+
     update();
 }

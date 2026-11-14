@@ -3,6 +3,11 @@
 //
 
 #include "ShapeStorage.h"
+#include <QFile>
+#include <QTextStream>
+
+#include "ShapeStorage.h"
+#include "ShapeFactory.h"
 void ShapeStorage::add(Shape *shape) {
     shapes.push_back(shape);
 }
@@ -54,4 +59,117 @@ std::vector<Shape*> ShapeStorage::takeSelected()
     }
 
     return selectedShapes;
+}
+bool ShapeStorage::saveToFile(const QString& fileName) const
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        return false;
+    }
+
+    QTextStream out(&file);
+
+    out << shapes.size() << "\n";
+
+    for (Shape* shape : shapes)
+    {
+        shape->save(out);
+    }
+
+    return out.status() == QTextStream::Ok;
+}
+bool ShapeStorage::loadFromFile(
+    const QString& fileName,
+    const ShapeFactory& factory,
+    const QRect& bounds
+)
+{
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        return false;
+    }
+
+    QTextStream in(&file);
+
+    int objectCount;
+
+    in >> objectCount;
+
+    if (in.status() != QTextStream::Ok ||
+        objectCount < 0)
+    {
+        return false;
+    }
+
+    std::vector<Shape*> loadedShapes;
+
+    for (int i = 0; i < objectCount; ++i)
+    {
+        QString type;
+
+        in >> type;
+
+        if (in.status() != QTextStream::Ok)
+        {
+            for (Shape* shape : loadedShapes)
+            {
+                delete shape;
+            }
+
+            return false;
+        }
+
+        Shape* shape = factory.create(type);
+
+        if (shape == nullptr)
+        {
+            for (Shape* loadedShape : loadedShapes)
+            {
+                delete loadedShape;
+            }
+
+            return false;
+        }
+
+        if (!shape->load(in, factory))
+        {
+            delete shape;
+
+            for (Shape* loadedShape : loadedShapes)
+            {
+                delete loadedShape;
+            }
+
+            return false;
+        }
+
+        if (!shape->fitsInBounds(bounds))
+        {
+            delete shape;
+
+            for (Shape* loadedShape : loadedShapes)
+            {
+                delete loadedShape;
+            }
+
+            return false;
+        }
+
+        loadedShapes.push_back(shape);
+    }
+
+    for (Shape* shape : shapes)
+    {
+        delete shape;
+    }
+
+    shapes.clear();
+
+    shapes.swap(loadedShapes);
+
+    return true;
 }

@@ -62,3 +62,52 @@ void CRectangle::changeSize(int delta)
     width += delta;
     height += delta;
 }
+void CRectangle::save(QTextStream& out, int indent) const
+{
+    QString spaces(indent, ' ');
+
+    out << spaces
+        << "RECTANGLE "
+        << x << " "
+        << y << " "
+        << width << " "
+        << height << " "
+        << color.name()
+        << "\n";
+}
+bool CRectangle::load(
+    QTextStream& in,
+    const ShapeFactory&
+)
+{
+    int newX;
+    int newY;
+    int newWidth;
+    int newHeight;
+    QString colorText;
+
+    in >> newX
+       >> newY
+       >> newWidth
+       >> newHeight
+       >> colorText;
+
+    QColor newColor(colorText);
+
+    if (in.status() != QTextStream::Ok ||
+        newWidth < 20 ||
+        newHeight < 20 ||
+        !newColor.isValid())
+    {
+        return false;
+    }
+
+    x = newX;
+    y = newY;
+    width = newWidth;
+    height = newHeight;
+    color = newColor;
+    selected = false;
+
+    return true;
+}

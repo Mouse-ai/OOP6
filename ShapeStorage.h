@@ -20,7 +20,12 @@ public:
     void clearSelection();
     void removeSelected();
     std::vector<Shape*> takeSelected();
-
+    bool saveToFile(const QString& fileName) const;
+    bool loadFromFile(
+        const QString& fileName,
+        const ShapeFactory& factory,
+        const QRect& bounds
+    );
     ~ShapeStorage();
 };
 

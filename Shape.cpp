@@ -27,11 +27,11 @@ void Shape::move(int dx, int dy, const QRect &bounds)
         y -= dy;
     }
 }
-void Shape::resize(int delta, const QRect &bounds)
+bool Shape::resize(int delta, const QRect &bounds)
 {
     if (!canResize(delta))
     {
-        return;
+        return false;
     }
 
     changeSize(delta);
@@ -39,7 +39,10 @@ void Shape::resize(int delta, const QRect &bounds)
     if (!fitsInBounds(bounds))
     {
         changeSize(-delta);
+        return false;
     }
+
+    return true;
 }
 bool Shape::fitsInBounds(const QRect &bounds) const
 {

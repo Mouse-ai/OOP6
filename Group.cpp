@@ -1,4 +1,5 @@
 #include "Group.h"
+#include "ShapeFactory.h"
 
 Group::Group()
     : Shape(0, 0)
@@ -90,4 +91,124 @@ std::vector<Shape*> Group::takeChildren()
     children.clear();
 
     return result;
+}
+void Group::save(QTextStream& out, int indent) const
+{
+    QString spaces(indent, ' ');
+
+    out << spaces
+        << "GROUP "
+        << children.size()
+        << "\n";
+
+    for (Shape* shape : children)
+    {
+        shape->save(out, indent + 2);
+    }
+}
+bool Group::load(
+    QTextStream& in,
+    const ShapeFactory& factory
+)
+{
+    int childCount;
+
+    in >> childCount;
+
+    if (in.status() != QTextStream::Ok ||
+        childCount < 0)
+    {
+        return false;
+    }
+
+    std::vector<Shape*> loadedChildren;
+
+    for (int i = 0; i < childCount; ++i)
+    {
+        QString type;
+
+        in >> type;
+
+        if (in.status() != QTextStream::Ok)
+        {
+            for (Shape* shape : loadedChildren)
+            {
+                delete shape;
+            }
+
+            return false;
+        }
+
+        Shape* child = factory.create(type);
+
+        if (child == nullptr)
+        {
+            for (Shape* shape : loadedChildren)
+            {
+                delete shape;
+            }
+
+            return false;
+        }
+
+        if (!child->load(in, factory))
+        {
+            delete child;
+
+            for (Shape* shape : loadedChildren)
+            {
+                delete shape;
+            }
+
+            return false;
+        }
+
+        loadedChildren.push_back(child);
+    }
+
+    for (Shape* shape : children)
+    {
+        delete shape;
+    }
+
+    children.clear();
+
+    for (Shape* shape : loadedChildren)
+    {
+        add(shape);
+    }
+
+    selected = false;
+
+    return true;
+}
+void Group::setColor(const QColor& newColor)
+{
+    Shape::setColor(newColor);
+
+    for (Shape* shape : children)
+    {
+        shape->setColor(newColor);
+    }
+}
+bool Group::resize(int delta, const QRect& bounds)
+{
+    std::vector<Shape*> resizedShapes;
+
+    for (Shape* shape : children)
+    {
+        if (!shape->resize(delta, bounds))
+        {
+            for (Shape* resizedShape : resizedShapes)
+            {
+                resizedShape->resize(-delta, bounds);
+            }
+
+            return false;
+        }
+
+        resizedShapes.push_back(shape);
+    }
+
+    return true;
 }

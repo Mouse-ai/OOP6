@@ -78,3 +78,52 @@ void CEllipse::changeSize(int delta)
     radiusX += delta;
     radiusY += delta;
 }
+void CEllipse::save(QTextStream& out, int indent) const
+{
+    QString spaces(indent, ' ');
+
+    out << spaces
+        << "ELLIPSE "
+        << x << " "
+        << y << " "
+        << radiusX << " "
+        << radiusY << " "
+        << color.name()
+        << "\n";
+}
+bool CEllipse::load(
+    QTextStream& in,
+    const ShapeFactory&
+)
+{
+    int newX;
+    int newY;
+    int newRadiusX;
+    int newRadiusY;
+    QString colorText;
+
+    in >> newX
+       >> newY
+       >> newRadiusX
+       >> newRadiusY
+       >> colorText;
+
+    QColor newColor(colorText);
+
+    if (in.status() != QTextStream::Ok ||
+        newRadiusX < 10 ||
+        newRadiusY < 10 ||
+        !newColor.isValid())
+    {
+        return false;
+    }
+
+    x = newX;
+    y = newY;
+    radiusX = newRadiusX;
+    radiusY = newRadiusY;
+    color = newColor;
+    selected = false;
+
+    return true;
+}

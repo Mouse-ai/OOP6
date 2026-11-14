@@ -1,7 +1,13 @@
 #include "CLine.h"
 
 CLine::CLine(int x, int y)
-    : Shape(x, y), halfLength(40)
+    : CLine(x, y, 40)
+{
+}
+
+CLine::CLine(int x, int y, int halfLength)
+    : Shape(x, y),
+      halfLength(halfLength)
 {
 }
 
@@ -68,4 +74,48 @@ bool CLine::canResize(int delta) const
 void CLine::changeSize(int delta)
 {
     halfLength += delta;
+}
+void CLine::save(QTextStream& out, int indent) const
+{
+    QString spaces(indent, ' ');
+
+    out << spaces
+        << "LINE "
+        << x << " "
+        << y << " "
+        << halfLength << " "
+        << color.name()
+        << "\n";
+}
+bool CLine::load(
+    QTextStream& in,
+    const ShapeFactory&
+)
+{
+    int newX;
+    int newY;
+    int newHalfLength;
+    QString colorText;
+
+    in >> newX
+       >> newY
+       >> newHalfLength
+       >> colorText;
+
+    QColor newColor(colorText);
+
+    if (in.status() != QTextStream::Ok ||
+        newHalfLength < 10 ||
+        !newColor.isValid())
+    {
+        return false;
+    }
+
+    x = newX;
+    y = newY;
+    halfLength = newHalfLength;
+    color = newColor;
+    selected = false;
+
+    return true;
 }

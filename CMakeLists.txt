@@ -44,6 +44,8 @@ add_executable(OOP6
         CTriangle.h
         Group.cpp
         Group.h
+        ShapeFactory.cpp
+        ShapeFactory.h
 )
 target_link_libraries(OOP6
         Qt::Core

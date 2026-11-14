@@ -15,10 +15,14 @@ protected:
 
 public:
     CLine(int x, int y);
+    CLine(int x, int y, int halfLength);
+
+    void save(QTextStream& out, int indent = 0) const override;
 
     bool contains(int pointX, int pointY) const override;
     void draw(QPainter &painter) const override;
     QRect boundingRect() const override;
+    bool load(QTextStream& in,const ShapeFactory& factory) override;
 };
 
 #endif
