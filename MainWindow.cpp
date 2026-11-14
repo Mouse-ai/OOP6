@@ -130,6 +130,47 @@ void MainWindow::setupActions()
     shapeGroup->setExclusive(true);
 
     circleAction->setChecked(true);
+
+    ungroupAction = new QAction("Разгруппировать", this);
+
+    connect(ungroupAction, &QAction::triggered, this, [this]()
+    {
+        ungroupSelected();
+    });
+
+    ungroupAction->setShortcut(QKeySequence("Ctrl+Shift+G"));
+
+    editMenu->addAction(ungroupAction);
+}
+
+
+void MainWindow::ungroupSelected()
+{
+    std::vector<Shape*> selectedShapes = storage.takeSelected();
+
+    for (Shape* shape : selectedShapes)
+    {
+        Group* group = dynamic_cast<Group*>(shape);
+
+        if (group != nullptr)
+        {
+            std::vector<Shape*> children = group->takeChildren();
+
+            for (Shape* child : children)
+            {
+                child->setSelected(true);
+                storage.add(child);
+            }
+
+            delete group;
+        }
+        else
+        {
+            storage.add(shape);
+        }
+    }
+
+    update();
 }
 void MainWindow::groupSelected()
 {

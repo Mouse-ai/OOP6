@@ -84,3 +84,10 @@ bool Group::canResize(int delta) const
 void Group::changeSize(int delta)
 {
 }
+std::vector<Shape*> Group::takeChildren()
+{
+    std::vector<Shape*> result = children;
+    children.clear();
+
+    return result;
+}

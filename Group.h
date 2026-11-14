@@ -26,6 +26,7 @@ public:
     QRect boundingRect() const override;
 
     void move(int dx, int dy, const QRect& bounds) override;
+    std::vector<Shape*> takeChildren();
 };
 
 #endif

@@ -43,6 +43,9 @@ private:
     QAction *ellipseAction;
     QAction *lineAction;
     QAction *groupAction;
+    QAction* ungroupAction;
+
+    void ungroupSelected();
     void groupSelected();
     ShapeStorage storage;
     ShapeType currentShapeType = ShapeType::Circle;
