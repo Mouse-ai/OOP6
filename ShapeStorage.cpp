@@ -7,7 +7,7 @@
 #include <QTextStream>
 
 #include "ShapeStorage.h"
-#include "ShapeFactory.h"
+
 void ShapeStorage::add(Shape *shape) {
     shapes.push_back(shape);
 }

@@ -116,7 +116,7 @@ bool Group::load(
     in >> childCount;
 
     if (in.status() != QTextStream::Ok ||
-        childCount < 0)
+        childCount < 2)
     {
         return false;
     }
