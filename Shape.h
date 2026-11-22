@@ -1,5 +1,5 @@
-#ifndef OOP4_SHAPE_H
-#define OOP4_SHAPE_H
+#ifndef OOP6_SHAPE_H
+#define OOP6_SHAPE_H
 
 #include <QColor>
 #include <QPainter>
