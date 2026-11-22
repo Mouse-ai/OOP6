@@ -2,8 +2,8 @@
 // Created by alexei on 25.10.2026.
 //
 
-#ifndef OOP4_SHAPESTORAGE_H
-#define OOP4_SHAPESTORAGE_H
+#ifndef OOP6_SHAPESTORAGE_H
+#define OOP6_SHAPESTORAGE_H
 #include <vector>
 #include "Shape.h"
 
@@ -30,4 +30,4 @@ public:
 };
 
 
-#endif //OOP4_SHAPESTORAGE_H
+#endif //OOP6_SHAPESTORAGE_H
