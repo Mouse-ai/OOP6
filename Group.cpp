@@ -77,12 +77,12 @@ void Group::move(int dx, int dy, const QRect& bounds)
         shape->move(dx, dy, bounds);
     }
 }
-bool Group::canResize(int delta) const
+bool Group::canResize(int) const
 {
     return false;
 }
 
-void Group::changeSize(int delta)
+void Group::changeSize(int)
 {
 }
 std::vector<Shape*> Group::takeChildren()
@@ -123,6 +123,17 @@ bool Group::load(
 
     std::vector<Shape*> loadedChildren;
 
+    auto clearLoadedChildren =
+        [&loadedChildren]()
+        {
+            for (Shape* shape : loadedChildren)
+            {
+                delete shape;
+            }
+
+            loadedChildren.clear();
+        };
+
     for (int i = 0; i < childCount; ++i)
     {
         QString type;
@@ -131,35 +142,23 @@ bool Group::load(
 
         if (in.status() != QTextStream::Ok)
         {
-            for (Shape* shape : loadedChildren)
-            {
-                delete shape;
-            }
-
+            clearLoadedChildren();
             return false;
         }
 
-        Shape* child = factory.create(type);
+        Shape* child =
+            factory.create(type);
 
         if (child == nullptr)
         {
-            for (Shape* shape : loadedChildren)
-            {
-                delete shape;
-            }
-
+            clearLoadedChildren();
             return false;
         }
 
         if (!child->load(in, factory))
         {
             delete child;
-
-            for (Shape* shape : loadedChildren)
-            {
-                delete shape;
-            }
-
+            clearLoadedChildren();
             return false;
         }
 
@@ -182,6 +181,7 @@ bool Group::load(
 
     return true;
 }
+
 void Group::setColor(const QColor& newColor)
 {
     Shape::setColor(newColor);
