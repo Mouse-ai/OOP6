@@ -179,6 +179,7 @@ bool ShapeStorage::loadFromFile(
         delete shape;
     }
 
+    shapes.clear();
     shapes.swap(loadedShapes);
 
     return true;
