@@ -1,49 +1,67 @@
+
 //
 // Created by alexei on 25.10.2026.
 //
 
 #include "ShapeStorage.h"
+
 #include <QFile>
 #include <QTextStream>
 
-#include "ShapeStorage.h"
-
-void ShapeStorage::add(Shape *shape) {
+void ShapeStorage::add(Shape* shape)
+{
     shapes.push_back(shape);
 }
-int ShapeStorage::getCount() const {
+
+int ShapeStorage::getCount() const
+{
     return static_cast<int>(shapes.size());
 }
-Shape *ShapeStorage::getObject(int index) const {
+
+Shape* ShapeStorage::getObject(int index) const
+{
     return shapes[index];
 }
-void ShapeStorage::clearSelection() {
-    for (Shape *shape : shapes) {
+
+void ShapeStorage::clearSelection()
+{
+    for (Shape* shape : shapes)
+    {
         shape->setSelected(false);
     }
 }
-ShapeStorage::~ShapeStorage() {
-    for (Shape *shape : shapes) {
+
+ShapeStorage::~ShapeStorage()
+{
+    for (Shape* shape : shapes)
+    {
         delete shape;
     }
 }
 
-void ShapeStorage::removeSelected() {
+void ShapeStorage::removeSelected()
+{
     size_t i = 0;
-    while (i < shapes.size()) {
-        if (shapes[i]->isSelected()) {
+
+    while (i < shapes.size())
+    {
+        if (shapes[i]->isSelected())
+        {
             delete shapes[i];
-            shapes.erase(shapes.begin()+i);
-        }else {
-            i++;
+            shapes.erase(shapes.begin() + i);
+        }
+        else
+        {
+            ++i;
         }
     }
 }
+
 std::vector<Shape*> ShapeStorage::takeSelected()
 {
     std::vector<Shape*> selectedShapes;
 
-    int i = 0;
+    size_t i = 0;
 
     while (i < shapes.size())
     {
@@ -60,11 +78,16 @@ std::vector<Shape*> ShapeStorage::takeSelected()
 
     return selectedShapes;
 }
-bool ShapeStorage::saveToFile(const QString& fileName) const
+
+bool ShapeStorage::saveToFile(
+    const QString& fileName
+) const
 {
     QFile file(fileName);
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!file.open(
+            QIODevice::WriteOnly |
+            QIODevice::Text))
     {
         return false;
     }
@@ -80,6 +103,7 @@ bool ShapeStorage::saveToFile(const QString& fileName) const
 
     return out.status() == QTextStream::Ok;
 }
+
 bool ShapeStorage::loadFromFile(
     const QString& fileName,
     const ShapeFactory& factory,
@@ -88,7 +112,9 @@ bool ShapeStorage::loadFromFile(
 {
     QFile file(fileName);
 
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file.open(
+            QIODevice::ReadOnly |
+            QIODevice::Text))
     {
         return false;
     }
@@ -96,7 +122,6 @@ bool ShapeStorage::loadFromFile(
     QTextStream in(&file);
 
     int objectCount;
-
     in >> objectCount;
 
     if (in.status() != QTextStream::Ok ||
@@ -107,55 +132,42 @@ bool ShapeStorage::loadFromFile(
 
     std::vector<Shape*> loadedShapes;
 
-    for (int i = 0; i < objectCount; ++i)
-    {
-        QString type;
-
-        in >> type;
-
-        if (in.status() != QTextStream::Ok)
+    auto clearLoadedShapes =
+        [&loadedShapes]()
         {
             for (Shape* shape : loadedShapes)
             {
                 delete shape;
             }
 
+            loadedShapes.clear();
+        };
+
+    for (int i = 0; i < objectCount; ++i)
+    {
+        QString type;
+        in >> type;
+
+        if (in.status() != QTextStream::Ok)
+        {
+            clearLoadedShapes();
             return false;
         }
 
-        Shape* shape = factory.create(type);
+        Shape* shape =
+            factory.create(type);
 
         if (shape == nullptr)
         {
-            for (Shape* loadedShape : loadedShapes)
-            {
-                delete loadedShape;
-            }
-
+            clearLoadedShapes();
             return false;
         }
 
-        if (!shape->load(in, factory))
+        if (!shape->load(in, factory) ||
+            !shape->fitsInBounds(bounds))
         {
             delete shape;
-
-            for (Shape* loadedShape : loadedShapes)
-            {
-                delete loadedShape;
-            }
-
-            return false;
-        }
-
-        if (!shape->fitsInBounds(bounds))
-        {
-            delete shape;
-
-            for (Shape* loadedShape : loadedShapes)
-            {
-                delete loadedShape;
-            }
-
+            clearLoadedShapes();
             return false;
         }
 
@@ -166,8 +178,6 @@ bool ShapeStorage::loadFromFile(
     {
         delete shape;
     }
-
-    shapes.clear();
 
     shapes.swap(loadedShapes);
 
