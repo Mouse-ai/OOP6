@@ -62,19 +62,26 @@ void MainWindow::setupActions()
     saveAction = new QAction("Сохранить", this);
     loadAction = new QAction("Загрузить", this);
 
-    connect(saveAction, &QAction::triggered, this, [this]()
-{
-    saveProject();
-});
+    connect(
+        saveAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::saveProject
+    );
 
-    connect(loadAction, &QAction::triggered, this, [this]()
-    {
-        loadProject();
-    });
+    connect(
+        loadAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::loadProject
+    );
 
-    connect(groupAction, &QAction::triggered, this, [this](){
-    groupSelected();
-    });
+    connect(
+        groupAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::groupSelected
+    );
 
     connect(triangleAction, &QAction::triggered, this, [this]() {
         currentShapeType = ShapeType::Triangle;
@@ -84,10 +91,12 @@ void MainWindow::setupActions()
     {
         currentShapeType = ShapeType::Square;
     });
-    connect(colorAction, &QAction::triggered, this, [this]()
-    {
-        changeSelectedColor();
-    });
+    connect(
+        colorAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::changeSelectedColor
+    );
     connect(circleAction, &QAction::triggered, this, [this]()
 {
     currentShapeType = ShapeType::Circle;
@@ -153,10 +162,12 @@ void MainWindow::setupActions()
 
     ungroupAction = new QAction("Разгруппировать", this);
 
-    connect(ungroupAction, &QAction::triggered, this, [this]()
-    {
-        ungroupSelected();
-    });
+    connect(
+        ungroupAction,
+        &QAction::triggered,
+        this,
+        &MainWindow::ungroupSelected
+    );
 
     ungroupAction->setShortcut(QKeySequence("Ctrl+Shift+G"));
     saveAction->setShortcut(QKeySequence::Save);
