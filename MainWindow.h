@@ -1,5 +1,5 @@
-#ifndef OOP4_MAINWINDOW_H
-#define OOP4_MAINWINDOW_H
+#ifndef OOP6_MAINWINDOW_H
+#define OOP6_MAINWINDOW_H
 
 #include <QMainWindow>
 #include <QMouseEvent>
